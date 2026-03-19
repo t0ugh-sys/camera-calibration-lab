@@ -1,0 +1,7 @@
+name: camera-calibration-lab
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy=2.2.4
+  - opencv=4.11.*
