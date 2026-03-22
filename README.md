@@ -22,6 +22,7 @@ camera-calibration-lab/
     io_utils.py
     mono.py
     stereo.py
+    visualization.py
   tests/
     test_boards.py
     test_io_utils.py
@@ -129,6 +130,30 @@ python -m camera_calibration_lab.cli stereo ^
 - 本质矩阵 `E`
 - 基础矩阵 `F`
 - 立体标定误差
+
+## 角点可视化
+
+```bash
+python -m camera_calibration_lab.cli visualize-corners ^
+  --image assets/IMG_20260321_231713.jpg ^
+  --rows 8 ^
+  --cols 11 ^
+  --square-size 1.5 ^
+  --output outputs/corners_preview.jpg
+```
+
+输出图会直接把检测到的棋盘角点画出来。
+
+## 去畸变可视化
+
+```bash
+python -m camera_calibration_lab.cli visualize-undistort ^
+  --image assets/IMG_20260321_231713.jpg ^
+  --calibration outputs/mono_assets.json ^
+  --output outputs/undistort_preview.jpg
+```
+
+输出图会把原图和去畸变结果横向拼接在一起，便于直接对比。
 
 ## 运行测试
 
