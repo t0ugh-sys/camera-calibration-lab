@@ -39,6 +39,18 @@ def visualize_corners(
         corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
     annotated = image.copy()
     cv2.drawChessboardCorners(annotated, board.pattern_size, corners, found)
+    label = 'TRUE' if found else 'FALSE'
+    color = (0, 180, 0) if found else (0, 0, 255)
+    cv2.putText(
+        annotated,
+        label,
+        (40, 80),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        2.0,
+        color,
+        4,
+        cv2.LINE_AA,
+    )
 
     if output_path is not None:
         output_path.parent.mkdir(parents=True, exist_ok=True)
