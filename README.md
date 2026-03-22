@@ -155,6 +155,24 @@ python -m camera_calibration_lab.cli visualize-undistort ^
 
 输出图会把原图和去畸变结果横向拼接在一起，便于直接对比。
 
+## 批量导出角点结果
+
+```bash
+python -m camera_calibration_lab.cli batch-visualize-corners ^
+  --images assets ^
+  --rows 8 ^
+  --cols 11 ^
+  --square-size 1.5 ^
+  --output-dir outputs/corners_batch ^
+  --summary outputs/corners_batch_summary.json
+```
+
+这个命令会：
+
+- 遍历目录下所有图片
+- 为每张图导出一张带角点标注的结果图
+- 生成一份汇总 JSON，标明每张图是否检测成功
+
 ## 运行测试
 
 ```bash

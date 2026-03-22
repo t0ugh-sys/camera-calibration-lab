@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 
 from .boards import ChessboardSpec
+from .io_utils import list_image_files, write_json
 
 
 def load_calibration(path: Path) -> tuple[np.ndarray, np.ndarray]:
@@ -44,6 +45,46 @@ def visualize_corners(
         cv2.imwrite(str(output_path), annotated)
 
     return bool(found)
+
+
+def batch_visualize_corners(
+    image_dir: Path,
+    board: ChessboardSpec,
+    output_dir: Path,
+    summary_path: Path | None = None,
+) -> dict[str, object]:
+    image_paths = list_image_files(image_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    results: list[dict[str, object]] = []
+    success_count = 0
+
+    for image_path in image_paths:
+        output_path = output_dir / image_path.name
+        found = visualize_corners(image_path, board, output_path)
+        if found:
+            success_count += 1
+        results.append(
+            {
+                'image': image_path.name,
+                'found': found,
+                'output': str(output_path),
+            }
+        )
+
+    summary = {
+        'image_dir': str(image_dir),
+        'output_dir': str(output_dir),
+        'total_images': len(image_paths),
+        'success_count': success_count,
+        'failure_count': len(image_paths) - success_count,
+        'results': results,
+    }
+
+    if summary_path is not None:
+        write_json(summary_path, summary)
+
+    return summary
 
 
 def visualize_undistort(

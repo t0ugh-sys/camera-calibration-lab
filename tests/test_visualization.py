@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 
 from camera_calibration_lab.boards import ChessboardSpec
-from camera_calibration_lab.visualization import load_calibration, visualize_undistort
+from camera_calibration_lab.visualization import batch_visualize_corners, load_calibration, visualize_undistort
 
 
 class VisualizationTests(unittest.TestCase):
@@ -68,6 +68,22 @@ class VisualizationTests(unittest.TestCase):
         board = ChessboardSpec(rows=8, cols=11, square_size=1.5)
 
         self.assertEqual(board.pattern_size, (11, 8))
+
+    def test_batch_visualize_corners_writes_summary_for_images(self) -> None:
+        image_dir = self.workspace / 'images'
+        image_dir.mkdir()
+        image_path = image_dir / 'sample.jpg'
+        cv2.imwrite(str(image_path), np.zeros((20, 20, 3), dtype=np.uint8))
+
+        board = ChessboardSpec(rows=8, cols=11, square_size=1.5)
+        output_dir = self.workspace / 'outputs'
+        summary_path = self.workspace / 'summary.json'
+
+        summary = batch_visualize_corners(image_dir, board, output_dir, summary_path)
+
+        self.assertEqual(summary['total_images'], 1)
+        self.assertEqual(summary['success_count'], 0)
+        self.assertTrue(summary_path.exists())
 
 
 if __name__ == '__main__':

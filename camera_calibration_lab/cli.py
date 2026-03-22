@@ -7,7 +7,7 @@ from .boards import ChessboardSpec
 from .io_utils import write_json
 from .mono import calibrate_mono
 from .stereo import calibrate_stereo
-from .visualization import visualize_corners, visualize_undistort
+from .visualization import batch_visualize_corners, visualize_corners, visualize_undistort
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,6 +35,14 @@ def build_parser() -> argparse.ArgumentParser:
     corners_parser.add_argument('--cols', type=int, required=True, help='chessboard inner corner cols')
     corners_parser.add_argument('--square-size', type=float, required=True, help='square size in your chosen unit')
     corners_parser.add_argument('--output', type=Path, required=True, help='output image path')
+
+    batch_corners_parser = subparsers.add_parser('batch-visualize-corners', help='export chessboard corner previews for all images in a directory')
+    batch_corners_parser.add_argument('--images', type=Path, required=True, help='input image directory')
+    batch_corners_parser.add_argument('--rows', type=int, required=True, help='chessboard inner corner rows')
+    batch_corners_parser.add_argument('--cols', type=int, required=True, help='chessboard inner corner cols')
+    batch_corners_parser.add_argument('--square-size', type=float, required=True, help='square size in your chosen unit')
+    batch_corners_parser.add_argument('--output-dir', type=Path, required=True, help='directory for annotated images')
+    batch_corners_parser.add_argument('--summary', type=Path, required=True, help='summary json path')
 
     undistort_parser = subparsers.add_parser('visualize-undistort', help='visualize original and undistorted image')
     undistort_parser.add_argument('--image', type=Path, required=True, help='input image path')
@@ -66,6 +74,16 @@ def main() -> None:
         found = visualize_corners(args.image, board, args.output)
         print(f'chessboard found: {found}')
         print(f'corner visualization saved: {args.output}')
+        return
+
+    if args.command == 'batch-visualize-corners':
+        board = ChessboardSpec(rows=args.rows, cols=args.cols, square_size=args.square_size)
+        summary = batch_visualize_corners(args.images, board, args.output_dir, args.summary)
+        print(f"processed images: {summary['total_images']}")
+        print(f"successful detections: {summary['success_count']}")
+        print(f"failed detections: {summary['failure_count']}")
+        print(f'corner previews saved: {args.output_dir}')
+        print(f'summary saved: {args.summary}')
         return
 
     visualize_undistort(args.image, args.calibration, args.output)
