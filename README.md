@@ -15,7 +15,7 @@
 camera-calibration-lab/
   README.md
   requirements.txt
-  src/camera_calibration_lab/
+  camera_calibration_lab/
     __init__.py
     boards.py
     cli.py
