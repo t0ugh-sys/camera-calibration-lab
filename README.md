@@ -1,10 +1,12 @@
 # Camera Calibration Lab
 
-一个用于练习相机标定的小项目，包含：
+一个用于练习相机标定的 Python 小项目，包含：
 
 - 单目标定
 - 双目标定
 - 标定结果导出
+- 角点检测可视化
+- 去畸变预览
 - 基础测试
 
 项目默认使用棋盘格标定板，依赖 `OpenCV` 和 `NumPy`。
@@ -14,6 +16,7 @@
 ```text
 camera-calibration-lab/
   README.md
+  environment.yml
   requirements.txt
   camera_calibration_lab/
     __init__.py
@@ -26,6 +29,9 @@ camera-calibration-lab/
   tests/
     test_boards.py
     test_io_utils.py
+    test_mono.py
+    test_stereo.py
+    test_visualization.py
 ```
 
 ## 安装依赖
@@ -74,9 +80,9 @@ data/
 
 ## 参数说明
 
-- `rows`: 棋盘格内角点行数
-- `cols`: 棋盘格内角点列数
-- `square-size`: 单个方格边长，单位自定，推荐毫米
+- `rows`：棋盘格内角点行数
+- `cols`：棋盘格内角点列数
+- `square-size`：单个方格边长，单位自定，推荐毫米
 
 例如：
 
@@ -100,6 +106,13 @@ python -m camera_calibration_lab.cli mono ^
   --output outputs/mono_left.json
 ```
 
+命令完成后会输出：
+
+- 总图片数
+- 有效图片数
+- 被跳过的图片数
+- 重投影误差
+
 ## 双目标定
 
 ```bash
@@ -112,6 +125,13 @@ python -m camera_calibration_lab.cli stereo ^
   --output outputs/stereo.json
 ```
 
+命令完成后会输出：
+
+- 总配对数
+- 有效配对数
+- 被跳过的配对数
+- 立体标定误差
+
 ## 输出内容
 
 单目标定输出：
@@ -120,6 +140,12 @@ python -m camera_calibration_lab.cli stereo ^
 - 畸变系数
 - 图像尺寸
 - 重投影误差
+- 总图片数 `total_images`
+- 有效图片数 `valid_images`
+- 参与标定的图片列表 `used_images`
+- 被跳过的图片列表 `rejected_images`
+- 标定板参数 `board`
+- 输入目录 `image_dir`
 
 双目标定输出：
 
@@ -130,6 +156,14 @@ python -m camera_calibration_lab.cli stereo ^
 - 本质矩阵 `E`
 - 基础矩阵 `F`
 - 立体标定误差
+- 总配对数 `total_pairs`
+- 有效配对数 `valid_pairs`
+- 成功配对列表 `used_pairs`
+- 失败配对列表 `rejected_pairs`
+- 标定板参数 `board`
+- 左右输入目录
+
+标定阶段会校验所有有效样本的图像分辨率是否一致；如果混入不同尺寸图片，程序会直接报错并停止输出结果。
 
 ## 角点可视化
 
@@ -142,7 +176,7 @@ python -m camera_calibration_lab.cli visualize-corners ^
   --output outputs/corners_preview.jpg
 ```
 
-输出图会直接把检测到的棋盘角点画出来。
+输出图会直接把检测到的棋盘格角点绘制出来。
 
 ## 去畸变可视化
 
@@ -153,7 +187,7 @@ python -m camera_calibration_lab.cli visualize-undistort ^
   --output outputs/undistort_preview.jpg
 ```
 
-输出图会把原图和去畸变结果横向拼接在一起，便于直接对比。
+输出图会将原图和去畸变结果横向拼接，便于直接对比。
 
 ## 批量导出角点结果
 
@@ -170,7 +204,7 @@ python -m camera_calibration_lab.cli batch-visualize-corners ^
 
 这个命令会：
 
-- 遍历目录下所有图片
+- 遍历目录中的所有图片
 - 为每张图导出一张带角点标注的结果图
 - 生成一份汇总 JSON，标明每张图是否检测成功
 
@@ -193,9 +227,18 @@ python -m camera_calibration_lab.cli batch-visualize-corners ^
 python -m unittest discover -s tests -v
 ```
 
+## 当前验证结果
+
+在项目环境 `D:\ProgramData\miniconda3\envs\camera-calibration-lab\python.exe` 下已验证：
+
+- `python -m unittest discover -s tests -v` 通过
+- `mono --images assets --rows 8 --cols 11 --square-size 1.5` 可正常输出结果
+- `batch-visualize-corners --visualize false` 可正常生成摘要
+- `visualize-undistort` 可正常导出去畸变对比图
+
 ## 后续可扩展
 
 - 支持 ChArUco 标定板
 - 支持保存去畸变结果
-- 支持双目校正和视差图生成
+- 支持双目标定后的极线校正与视差图生成
 - 支持 ROS 图像话题输入
