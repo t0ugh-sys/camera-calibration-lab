@@ -64,29 +64,32 @@ def batch_visualize_corners(
     board: ChessboardSpec,
     output_dir: Path,
     summary_path: Path | None = None,
+    visualize: bool = True,
 ) -> dict[str, object]:
     image_paths = list_image_files(image_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if visualize:
+        output_dir.mkdir(parents=True, exist_ok=True)
 
     results: list[dict[str, object]] = []
     success_count = 0
 
     for image_path in image_paths:
         output_path = output_dir / image_path.name
-        found = visualize_corners(image_path, board, output_path)
+        found = visualize_corners(image_path, board, output_path if visualize else None)
         if found:
             success_count += 1
         results.append(
             {
                 'image': image_path.name,
                 'found': found,
-                'output': str(output_path),
+                'output': str(output_path) if visualize else None,
             }
         )
 
     summary = {
         'image_dir': str(image_dir),
         'output_dir': str(output_dir),
+        'visualize': visualize,
         'total_images': len(image_paths),
         'success_count': success_count,
         'failure_count': len(image_paths) - success_count,

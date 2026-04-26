@@ -7,24 +7,34 @@ import cv2
 import numpy as np
 
 from .boards import ChessboardSpec
-from .io_utils import list_image_files
+from .io_utils import ensure_consistent_image_size, list_image_files
 
 
 @dataclass
 class MonoCalibrationResult:
+    image_dir: str
+    board: dict[str, float | int]
     image_size: tuple[int, int]
     camera_matrix: np.ndarray
     distortion_coefficients: np.ndarray
     reprojection_error: float
+    total_images: int
     valid_images: int
+    used_images: list[str]
+    rejected_images: list[str]
 
     def as_dict(self) -> dict[str, object]:
         return {
+            'image_dir': self.image_dir,
+            'board': self.board,
             'image_size': list(self.image_size),
             'camera_matrix': self.camera_matrix,
             'distortion_coefficients': self.distortion_coefficients,
             'reprojection_error': self.reprojection_error,
+            'total_images': self.total_images,
             'valid_images': self.valid_images,
+            'used_images': self.used_images,
+            'rejected_images': self.rejected_images,
         }
 
 
@@ -58,15 +68,19 @@ def calibrate_mono(image_dir: Path, board: ChessboardSpec) -> MonoCalibrationRes
     image_points: list[np.ndarray] = []
     image_size: tuple[int, int] | None = None
     template_points = board.object_points()
+    used_images: list[str] = []
+    rejected_images: list[str] = []
 
     for image_path in image_paths:
         detected = _find_corners(image_path, board)
         if detected is None:
+            rejected_images.append(image_path.name)
             continue
         current_image_size, corners = detected
-        image_size = current_image_size
+        image_size = ensure_consistent_image_size(image_size, current_image_size, image_path.name)
         object_points.append(template_points.copy())
         image_points.append(corners)
+        used_images.append(image_path.name)
 
     if image_size is None or not image_points:
         raise ValueError('no valid chessboard detections found for mono calibration')
@@ -88,11 +102,20 @@ def calibrate_mono(image_dir: Path, board: ChessboardSpec) -> MonoCalibrationRes
         distortion_coefficients,
     )
     return MonoCalibrationResult(
+        image_dir=str(image_dir),
+        board={
+            'rows': board.rows,
+            'cols': board.cols,
+            'square_size': board.square_size,
+        },
         image_size=image_size,
         camera_matrix=camera_matrix,
         distortion_coefficients=distortion_coefficients,
         reprojection_error=reprojection_error,
+        total_images=len(image_paths),
         valid_images=len(image_points),
+        used_images=used_images,
+        rejected_images=rejected_images,
     )
 
 
@@ -118,4 +141,3 @@ def _compute_reprojection_error(
         return float('inf')
 
     return float((total_error / total_points) ** 0.5)
-

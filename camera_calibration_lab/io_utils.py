@@ -33,6 +33,24 @@ def pair_stereo_images(left_dir: Path, right_dir: Path) -> list[tuple[Path, Path
     return pairs
 
 
+def ensure_consistent_image_size(
+    expected: tuple[int, int] | None,
+    current: tuple[int, int],
+    source_name: str,
+) -> tuple[int, int]:
+    if expected is None:
+        return current
+    if expected != current:
+        expected_width, expected_height = expected
+        current_width, current_height = current
+        raise ValueError(
+            'inconsistent image size detected for '
+            f'{source_name}: expected {expected_width}x{expected_height}, '
+            f'got {current_width}x{current_height}'
+        )
+    return expected
+
+
 def ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -51,4 +69,3 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     ensure_parent(path)
     with path.open('w', encoding='utf-8') as file:
         json.dump(to_serializable(payload), file, indent=2, ensure_ascii=False)
-

@@ -85,6 +85,21 @@ class VisualizationTests(unittest.TestCase):
         self.assertEqual(summary['success_count'], 0)
         self.assertTrue(summary_path.exists())
 
+    def test_batch_visualize_corners_can_skip_image_export(self) -> None:
+        image_dir = self.workspace / 'images_skip'
+        image_dir.mkdir()
+        image_path = image_dir / 'sample.jpg'
+        cv2.imwrite(str(image_path), np.zeros((20, 20, 3), dtype=np.uint8))
+
+        board = ChessboardSpec(rows=8, cols=11, square_size=1.5)
+        output_dir = self.workspace / 'outputs_skip'
+
+        summary = batch_visualize_corners(image_dir, board, output_dir, visualize=False)
+
+        self.assertFalse(output_dir.exists())
+        self.assertFalse(summary['visualize'])
+        self.assertIsNone(summary['results'][0]['output'])
+
 
 if __name__ == '__main__':
     unittest.main()

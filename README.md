@@ -164,7 +164,8 @@ python -m camera_calibration_lab.cli batch-visualize-corners ^
   --cols 11 ^
   --square-size 1.5 ^
   --output-dir outputs/corners_batch ^
-  --summary outputs/corners_batch_summary.json
+  --summary outputs/corners_batch_summary.json ^
+  --visualize true
 ```
 
 这个命令会：
@@ -172,6 +173,19 @@ python -m camera_calibration_lab.cli batch-visualize-corners ^
 - 遍历目录下所有图片
 - 为每张图导出一张带角点标注的结果图
 - 生成一份汇总 JSON，标明每张图是否检测成功
+
+如果你只想看每张图的 `true/false` 结果，不生成可视化图片：
+
+```bash
+python -m camera_calibration_lab.cli batch-visualize-corners ^
+  --images assets ^
+  --rows 8 ^
+  --cols 11 ^
+  --square-size 1.5 ^
+  --output-dir outputs/corners_batch ^
+  --summary outputs/corners_batch_summary.json ^
+  --visualize false
+```
 
 ## 运行测试
 
